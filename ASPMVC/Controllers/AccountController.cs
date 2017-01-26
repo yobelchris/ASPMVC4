@@ -16,6 +16,10 @@ namespace ASPMVC.Controllers
         {
             return View();
         }
+        public ActionResult LogIn()
+        {
+            return View();
+        }
 
         [HttpPost]
         public ActionResult SignUp(UserSignUpView USV)
@@ -35,6 +39,39 @@ namespace ASPMVC.Controllers
                 }
             }
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult LogIn(UserLoginView ULV, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                UserManager UM = new UserManager();
+                string password = UM.GetUserPassword(ULV.LoginName);
+
+                if (string.IsNullOrEmpty(password))
+                {
+                    ModelState.AddModelError("","The user login or password provided is incorrect");
+                }else
+                {
+                    if (ULV.Password.Equals(password))
+                    {
+                        FormsAuthentication.SetAuthCookie(ULV.LoginName, false);
+                        return RedirectToAction("Welcome", "Home");
+                    }else
+                    {
+                        ModelState.AddModelError("", "The password provided is incorrect");
+                    }
+                }
+            }
+            return View(ULV);
+        }
+
+        [Authorize]
+        public ActionResult SignOut()
+        {
+            FormsAuthentication.SignOut();
+            return RedirectToAction("Index", "Home");
         }
     }
 }
